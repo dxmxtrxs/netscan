@@ -6,6 +6,10 @@ import dicttoxml
 import json
 import socket
 import sys
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Function to get the current time formatted as a string
 def time_format():
@@ -13,8 +17,11 @@ def time_format():
 
 # Function to make an API request and return a device's manufacturer by MAC address
 def api_lookup(mac_address: str, vV_switch: bool) -> str:
+
+    api_key = os.getenv("MAC_VENDORS_APIKEY")
+
     url = f"https://api.macvendors.com/v1/lookup/{mac_address}"
-    headers = {"Authorization": "Bearer API_KEY"}
+    headers = {"Authorization": f"Bearer {api_key}"}
     if vV_switch:
         print("Header for API lookup created")
     api = requests.get(url=url, headers=headers)

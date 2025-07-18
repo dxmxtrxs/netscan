@@ -5,6 +5,7 @@ from sniffer import sniff_network  # Importing the sniff function from the sniff
 from quick_scanner import quick_scan  # Importing the quick_scan function from the quick_scanner module
 import os  # Importing os module. Used to check if the user is running the script as root.
 from port_scan import scan_ports 
+from os_detection import detect_os
 
 from datetime import datetime  # Importing datetime module for date and time manipulation
 
@@ -57,7 +58,8 @@ def main():
     print("4. sniff\t- Sniff packets in the network")
     print("5. check\t- Run a port scan on a device discovered during a scan")
     print("6. help\t\t- Display help information about commands or general usage")
-    print("7. exit\t\t- Exit the program")          
+    print("7. osdetect\t- Detect the potential OS a Host is using.")
+    print("8. exit\t\t- Exit the program")          
     print("For more inforamtion on a command use: [COMMAND] -h")
     print("\n")  # Printing a new line
     
@@ -75,6 +77,35 @@ def main():
         if "exit" in prompt:  # If user wants to exit
             print("\033[91mQuitting...\033[0m ")  # Display quitting message
             sys.exit()  # Exit the program
+        elif "osdetect" in prompt:
+            if "-h" in prompt:
+                print("\033[91mOS Detection Help:\033[0m")
+                print("Usage: osdetect [IP] or [ID]")
+                print("Description: Attempt to detect the operating system of a host using TTL and TCP fingerprinting.")
+                print("Examples:")
+                print("  osdetect 192.168.1.1")
+                print("  osdetect 3  (ID from previous scan)")
+                continue
+
+            try:
+                target = prompt[1]
+                if target.isdigit() and scan_result and int(target) in scan_result:
+                    ip = scan_result[int(target)]["ip"]
+                else:
+                    ip = target
+
+                print(f"Detecting OS for {ip}...")
+                result = detect_os(ip)
+                if "error" in result:
+                    print(f"Error: {result['error']}")
+                else:
+                    print(f"IP: {result['ip']}")
+                    print(f"TTL: {result['ttl']}")
+                    print(f"TCP Window Size: {result['tcp_window']}")
+                    print(f"Guessed OS: {result['os_guess']}")
+            except Exception as e:
+                print("Usage: osdetect [IP] or [ID from scan result]")
+                print("Error:", str(e))
         elif "help" in prompt:  # If user wants help
             if "-h" in prompt:  # If user wants specific help
                 # Printing help message for help command
@@ -91,6 +122,7 @@ def main():
                 print("3. results\t- Display the results of the network scan")
                 print("4. sniff\t- Sniff packets in the network")
                 print("5. help\t\t- Display help information about commands or general usage")
+                print("7. osdetect\t- Detect the potential OS a Host is using.")
                 print("6. exit\t\t- Exit the program")          
                 print("For more inforamtion on a command use: [COMMAND] -h")
         elif "sniff" in prompt:
